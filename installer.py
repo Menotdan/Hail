@@ -97,13 +97,13 @@ def install_package_and_exit_on_failure(folder, package_info):
     if not get_platform() in package_info["platforms"]:
         print("This package does not support the current platform! (" + get_platform() + ")!")
         exit(1) # Error
-        quit()
+        
 
     if check_if_package_installed(package_info["name"]):
         if not check_package_version_greater(package_info["name"], package_info["version"]):
             print("Package already installed!")
             exit(1) # Error
-            quit()
+            
         else:
             change_version_number_installed_package(package_info["name"], package_info["version"])
     else:
@@ -123,7 +123,7 @@ def install_package(package, hail_path):
         print("Package is not valid (Attempting extraction)!")
         print("Python error: " + str(e))
         exit(1) # Error
-        quit()
+        
 
     package_info = packages.check_package(folder)
     install_package_and_exit_on_failure(folder, package_info)

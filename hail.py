@@ -38,17 +38,17 @@ def main(argv):
     if len(argv) < 2:
         print("Usage: hail <command> [file] [option string (starts with a +)]")
         exit(1) # Error
-        quit()
+        
     if len(argv) > 3 and option_string == None or len(argv) > 4:
         print("Usage: hail <command> [file] [option string (starts with a +)]")
         exit(1) # Error
-        quit()
+        
     
     if argv[1] == "package":
         if len(argv) < 3 or (option_string != None and len(argv) < 4):
             print("Expected a [file] argument for this command!")
             exit(1) # Error
-            quit()
+            
         folder = argv[2]
 
         if folder[0] != "\\" and folder[0] != "/":
@@ -62,12 +62,12 @@ def main(argv):
             print("Failed to create package! Folder may be missing!")
             print("Python error: " + str(e))
             exit(1) # Error
-            quit()
+            
     elif argv[1] == "unpackage":
         if len(argv) < 3 or (option_string != None and len(argv) < 4):
             print("Expected a [file] argument for this command!")
             exit(1) # Error
-            quit()
+            
         package = argv[2]
 
         if package[0] != "\\" and package[0] != "/":
@@ -81,13 +81,13 @@ def main(argv):
             print("Package is not valid (Attempting extraction)!")
             print("Python error: " + str(e))
             exit(1) # Error
-            quit()
+            
 
     elif argv[1] == "install":
         if len(argv) < 3 or (option_string != None and len(argv) < 4):
             print("Expected a [file] argument for this command!")
             exit(1) # Error
-            quit()
+            
         package = argv[2]
 
         if package[0] != "\\" and package[0] != "/":
