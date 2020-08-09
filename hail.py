@@ -4,6 +4,7 @@ import zipfile
 import os
 
 hail_pkg_ext = ".hpkg"
+hail_data_path = ""
 
 def get_all_files(directory):
     paths = []
@@ -187,7 +188,27 @@ def get_package_name(folder):
         if info[0] == "name":
             return info[1]
 
+def setup_hail():
+    global hail_data_path
+
+    home = os.path.expanduser("~")
+    if get_platform() == "windows":
+        hail_data_path = os.path.join(home, "AppData\\Local\\hail")
+        if not os.path.isdir(hail_data_path):
+            os.mkdir(hail_data_path)
+            open(os.path.join(hail_data_path, "installed-packages"), "w").close()
+            open(os.path.join(hail_data_path, "trusted-packages"), "w").close()
+            open(os.path.join(hail_data_path, "repositories"), "w").close()
+    else:
+        hail_data_path = os.path.join(home, ".hail")
+        if not os.path.isdir(hail_data_path):
+            os.mkdir(hail_data_path)
+            open(os.path.join(hail_data_path, "installed-packages"), "w").close()
+            open(os.path.join(hail_data_path, "trusted-packages"), "w").close()
+            open(os.path.join(hail_data_path, "repositories"), "w").close()
+
 def main(argv):
+    setup_hail()
     option_string = None
     for a in argv:
         if a[0] == "+":
