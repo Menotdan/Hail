@@ -161,11 +161,14 @@ def get_platform():
     if p == "darwin":
         return "mac"
 
-def validate_script_and_run(script_path):
+def validate_script_and_run(script_path, script_cwd):
     with open(script_path, "r") as script_fp:
         # Check script for weird things
         pass
+    old_cwd = os.getcwd()
+    os.chdir(script_cwd)
     os.system(script_path)
+    os.chdir(old_cwd)
 
 def install_package_and_exit_on_failure(folder, package_info):
     if not get_platform() in package_info["platforms"]:
@@ -173,7 +176,7 @@ def install_package_and_exit_on_failure(folder, package_info):
         exit(1)
     install_script_name = package_info["install_scripts"][get_platform()]
     subpackage_path = package_info["subpackages"][get_platform()]
-    validate_script_and_run(os.path.abspath(os.path.join(subpackage_path, install_script_name)))
+    validate_script_and_run(os.path.abspath(os.path.join(subpackage_path, install_script_name)), os.path.abspath(subpackage_path))
 
 def get_package_name(folder):
     package_info = open(os.path.join(folder, "hail-info"), "r")
