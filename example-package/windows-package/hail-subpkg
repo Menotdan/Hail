@@ -1,0 +1,2 @@
+platform=windows
+install-script=install.bat

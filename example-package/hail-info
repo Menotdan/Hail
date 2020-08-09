@@ -1,0 +1,3 @@
+name=example_package
+platforms=windows
+windows-folder-install=windows-package
