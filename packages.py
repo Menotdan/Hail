@@ -13,6 +13,7 @@ def validate_subpackage_and_exit_on_fail(folder, subpackage_name):
     if "hail-subpkg" not in os.listdir(folder):
         print("Subpackage " + subpackage_name + " is missing hail-subpkg!")
         exit(1) # Error
+        quit()
     
     ret = ""
     
@@ -27,16 +28,19 @@ def validate_subpackage_and_exit_on_fail(folder, subpackage_name):
                 print("Invalid subpackage configuration!")
                 print("Missing a key or value on line " + str(linec) + ", subpackage " + subpackage_name +" !")
                 exit(1) # Error
+                quit()
         if info[0] == "install-script":
             if len(info) != 2:
                 print("Invalid subpackage configuration!")
                 print("Missing a key or value on line " + str(linec) + ", subpackage " + subpackage_name +" !")
                 exit(1) # Error
+                quit()
             ret = info[1]
     
     if ret == "":
         print("No install script for subpackage " + subpackage_name + "!")
         exit(1) # Error
+        quit()
     return ret
 
 def check_package(folder):
@@ -49,6 +53,7 @@ def check_package(folder):
     if "hail-info" not in os.listdir(folder):
         print("Package is missing hail-info!")
         exit(1) # Error
+        quit()
 
     package_info = open(os.path.join(folder, "hail-info"), "r")
     linec = 1
@@ -62,28 +67,33 @@ def check_package(folder):
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
+                quit()
 
             platforms = info[1].split(",")
             if len(platforms) == 0 or platforms[0] == "":
                 print("This package does not support any platforms!")
                 exit(1) # Error
+                quit()
         elif info[0] == "name":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
+                quit()
             returned_info["name"] = info[1]
         elif info[0] == "version":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
+                quit()
             returned_info["version"] = info[1]
         elif info[0] == "linux-subpackage":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
+                quit()
             
             linux_subpkg_path = info[1]
         elif info[0] == "windows-subpackage":
@@ -91,6 +101,7 @@ def check_package(folder):
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
+                quit()
             
             windows_subpkg_path = info[1]
         elif info[0] == "mac-subpackage":
@@ -98,6 +109,7 @@ def check_package(folder):
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
+                quit()
             
             mac_subpkg_path = info[1]
 
@@ -112,11 +124,13 @@ def check_package(folder):
             print("Invalid platform " + p + " listed as supported in package config!")
             print("Supported platforms are [linux, windows, mac].")
             exit(1) # Error
+            quit()
 
         if p == "linux":
             if linux_subpkg_path == "":
                 print("No subpackage path found for " + p + " platform listed as supported!")
                 exit(1) # Error
+                quit()
             subpackage_paths.append(os.path.join(folder, linux_subpkg_path))
             subpackage_names.append(linux_subpkg_path)
             subpackage_platforms.append(p)
@@ -124,6 +138,7 @@ def check_package(folder):
             if windows_subpkg_path == "":
                 print("No subpackage path found for " + p + " platform listed as supported!")
                 exit(1) # Error
+                quit()
             subpackage_paths.append(os.path.join(folder, windows_subpkg_path))
             subpackage_names.append(windows_subpkg_path)
             subpackage_platforms.append(p)
@@ -131,6 +146,7 @@ def check_package(folder):
             if mac_subpkg_path == "":
                 print("No subpackage path found for " + p + " platform listed as supported!")
                 exit(1) # Error
+                quit()
             subpackage_paths.append(os.path.join(folder, mac_subpkg_path))
             subpackage_names.append(mac_subpkg_path)
             subpackage_platforms.append(p)
@@ -157,11 +173,13 @@ def check_package(folder):
     except:
         print("Package missing name!")
         exit(1) # Error
+        quit()
     
     try:
         _ = returned_info["version"]
     except:
         print("Package missing version!")
         exit(1) # Error
+        quit()
 
     return returned_info
