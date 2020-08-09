@@ -1,4 +1,5 @@
 name=example_package
+version=0.0.2
 platforms=linux,windows
 linux-subpackage=linux-package
 windows-subpackage=windows-package
