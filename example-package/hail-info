@@ -1,3 +1,4 @@
 name=example_package
-platforms=windows
-windows-folder-install=windows-package
+platforms=linux,windows
+linux-subpackage=linux-package
+windows-subpackage=windows-package

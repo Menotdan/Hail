@@ -1,0 +1,2 @@
+platform=linux
+install-script=install.sh

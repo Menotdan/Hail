@@ -60,14 +60,13 @@ def validate_package_and_exit_on_fail(folder):
         line = line.replace("\n", "").replace("\r", "")
 
         info = line.split("=")
-        print(info)
+        # print(info)
         if info[0] == "platforms":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
 
-            print(info[1].split(","))
             platforms = info[1].split(",")
             if len(platforms) == 0 or platforms[0] == "":
                 print("This package does not support any platforms!")
@@ -78,21 +77,21 @@ def validate_package_and_exit_on_fail(folder):
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
             returned_info["name"] = info[1]
-        elif info[0] == "linux-folder-install":
+        elif info[0] == "linux-subpackage":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
             
             linux_subpkg_path = info[1]
-        elif info[0] == "windows-folder-install":
+        elif info[0] == "windows-subpackage":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
                 exit(1) # Error
             
             windows_subpkg_path = info[1]
-        elif info[0] == "mac-folder-install":
+        elif info[0] == "mac-subpackage":
             if len(info) != 2:
                 print("Invalid package configuration!")
                 print("Missing a key or value on line " + str(linec) + "!")
@@ -102,15 +101,16 @@ def validate_package_and_exit_on_fail(folder):
 
         linec += 1
     
+    subpackage_paths = []
+    subpackage_names = []
+    subpackage_platforms = []
+
     for p in platforms:
         if p != "linux" and p != "windows" and p != "mac":
             print("Invalid platform " + p + " listed as supported in package config!")
             print("Supported platforms are [linux, windows, mac].")
             exit(1) # Error
-        
-        subpackage_paths = []
-        subpackage_names = []
-        subpackage_platforms = []
+
         if p == "linux":
             if linux_subpkg_path == "":
                 print("No subpackage path found for " + p + " platform listed as supported!")
@@ -142,13 +142,38 @@ def validate_package_and_exit_on_fail(folder):
         install_scripts.append(install_script)
         install_scripts_info[subpackage_platforms[i]] = install_script
 
+    subpackages = {}
+    for i in range(len(subpackage_platforms)):
+        subpackages[subpackage_platforms[i]] = subpackage_paths[i]
+
     returned_info["install_scripts"] = install_scripts_info
     returned_info["platforms"] = platforms
+    returned_info["subpackages"] = subpackages
 
     return returned_info
 
+def get_platform():
+    p = sys.platform
+    if p == "linux" or p == "linux2":
+        return "linux"
+    if p == "win32":
+        return "windows"
+    if p == "darwin":
+        return "mac"
+
+def validate_script_and_run(script_path):
+    with open(script_path, "r") as script_fp:
+        # Check script for weird things
+        pass
+    os.system(script_path)
+
 def install_package_and_exit_on_failure(folder, package_info):
-    pass
+    if not get_platform() in package_info["platforms"]:
+        print("This package does not support the current platform! (" + get_platform() + ")!")
+        exit(1)
+    install_script_name = package_info["install_scripts"][get_platform()]
+    subpackage_path = package_info["subpackages"][get_platform()]
+    validate_script_and_run(os.path.abspath(os.path.join(subpackage_path, install_script_name)))
 
 def get_package_name(folder):
     package_info = open(os.path.join(folder, "hail-info"), "r")
@@ -222,11 +247,14 @@ def main(argv):
         print("Attempting to install " + package + ".")
 
         folder = ""
-
         try:
             with zipfile.ZipFile(package, "r") as zf:
                 dirs = list(set([os.path.dirname(x) for x in zf.namelist()]))
-                folder = [os.path.split(x)[0] for x in dirs][1]
+                folder = [os.path.split(x)[0] for x in dirs]
+                for f in folder:
+                    if f != "":
+                        folder = f
+                        break
                 zf.extractall()
         except Exception as e:
             print("Package is not valid (Attempting extraction)!")
@@ -234,7 +262,7 @@ def main(argv):
             exit(1) # Error
 
         package_info = validate_package_and_exit_on_fail(folder)
-        print(package_info)
+        # print(package_info)
         install_package_and_exit_on_failure(folder, package_info)
 
 main(sys.argv)
