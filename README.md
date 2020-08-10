@@ -11,3 +11,5 @@ Simple(ish) package format
 Zipped packages
 
 Installed package list
+
+Repositories
