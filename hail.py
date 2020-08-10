@@ -97,7 +97,7 @@ def main(argv):
             package = os.path.join("./", package)
         print("Attempting to install " + package + ".")
 
-        installer.install_package(package, hail_data_path)
+        installer.install_package(package, argv[2], hail_data_path)
     elif argv[1] == "repoupdate":
         fp = open(os.path.join(hail_data_path, "repositories"), "r")
         for l in fp:

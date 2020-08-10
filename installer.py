@@ -128,15 +128,24 @@ def check_if_package_installed(package_name):
     fp.close()
     return False
 
-def install_package_and_exit_on_failure(folder, package_info):
+def install_package_and_exit_on_failure(folder, package_info, installed_from_repo):
     if not get_platform() in package_info["platforms"]:
         print("This package does not support the current platform! (" + get_platform() + ")!")
+        if installed_from_repo: # Remove if installed from repository
+            os.remove(package_info["name"])
+            shutil.rmtree(folder)
         exit(1) # Error
-        
+
+    for d in package_info["dependencies"]:
+        print("Package " + package_info["name"] + " depends on " + d[0] + ".")
+        install_package(d[0], d[0], hail_data_path)
 
     if check_if_package_installed(package_info["name"]):
         if not check_package_version_greater(package_info["name"], package_info["version"]):
             print("Package already installed!")
+            if installed_from_repo: # Remove if installed from repository
+                os.remove(package_info["name"])
+                shutil.rmtree(folder)
             exit(1) # Error
             
         else:
@@ -144,14 +153,17 @@ def install_package_and_exit_on_failure(folder, package_info):
     else:
         add_package_installed(package_info["name"], package_info["version"])
 
+
     install_script_name = package_info["install_scripts"][get_platform()]
     subpackage_path = package_info["subpackages"][get_platform()]
     validate_script_and_run(os.path.abspath(os.path.join(subpackage_path, install_script_name)), os.path.abspath(subpackage_path))
 
-def install_package(package, hail_path):
+def install_package(package, package_name, hail_path):
     global hail_data_path
     hail_data_path = hail_path
     installed_from_repo = False
+
+    print("Installing package " + package_name + ".")
 
     if not os.path.isfile(package):
         # Download from a repository
@@ -159,13 +171,12 @@ def install_package(package, hail_path):
         best_repo = ""
         best_version = ""
         for repo in os.listdir(os.path.join(hail_data_path, "repo")):
-            print("Checking repo " + repo)
             fp = open(os.path.join(hail_data_path, "repo", repo), "r")
             for l in fp:
                 l = l.replace("\r", "").replace("\n", "")
                 if l != "":
                     info = l.split(" - ")
-                    if info[0] == sys.argv[2]:
+                    if info[0] == package_name:
                         if best_version == "":
                             best_repo = repo
                             best_version = info[1]
@@ -175,16 +186,14 @@ def install_package(package, hail_path):
                                 best_version = info[1]
             fp.close()
         if best_repo == "":
-            print("No repo has this package!")
+            print("No repository has this package!")
             exit(1) # Error
-        
-        print("Attempting to download package from " + best_repo + ".")
+
         try:
-            package = repositories.download_package(best_repo, sys.argv[2])
+            package = repositories.download_package(best_repo, package_name)
         except:
             print("Downloading package from repository failed! Package not installed.")
             exit(1) # Error
-        print("Downloaded " + sys.argv[2] + " from " + best_repo + ".")
         installed_from_repo = True
     folder = ""
     try:
@@ -196,7 +205,7 @@ def install_package(package, hail_path):
         
 
     package_info = packages.check_package(folder)
-    install_package_and_exit_on_failure(folder, package_info)
+    install_package_and_exit_on_failure(folder, package_info, installed_from_repo)
 
     if installed_from_repo: # Remove if installed from repository
         os.remove(package)

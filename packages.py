@@ -46,6 +46,7 @@ def validate_subpackage_and_exit_on_fail(folder, subpackage_name):
 def check_package(folder):
     returned_info = {}
     platforms = []
+    dependencies = []
     linux_subpkg_path = ""
     windows_subpkg_path = ""
     mac_subpkg_path = ""
@@ -81,6 +82,15 @@ def check_package(folder):
                 exit(1) # Error
                 
             returned_info["name"] = info[1]
+        elif info[0] == "depends":
+            if len(info) != 2:
+                print("Invalid package configuration!")
+                print("Missing a key or value on line " + str(linec) + "!")
+                exit(1) # Error
+                
+            for d in info[1].split(","):
+                name_ver = d.split("/")
+                dependencies.append(name_ver)
         elif info[0] == "version":
             if len(info) != 2:
                 print("Invalid package configuration!")
@@ -167,6 +177,7 @@ def check_package(folder):
     returned_info["install_scripts"] = install_scripts_info
     returned_info["platforms"] = platforms
     returned_info["subpackages"] = subpackages
+    returned_info["dependencies"] = dependencies
 
     try:
         _ = returned_info["name"]
