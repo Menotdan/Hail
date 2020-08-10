@@ -13,3 +13,5 @@ Zipped packages
 Installed package list
 
 Repositories
+
+Dependencies
