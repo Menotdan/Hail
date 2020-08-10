@@ -1,7 +1,9 @@
 import os
 import sys
+import shutil
 import packer
 import packages
+import repositories
 
 hail_data_path = ""
 
@@ -40,6 +42,39 @@ def check_package_version_greater(package_name, package_version):
             ver_str2 = info[1].split(".")
             break
     fp.close()
+
+    for v in ver_str1:
+        ver_parts1.append(int(v))
+    for v in ver_str2:
+        ver_parts2.append(int(v))
+    
+    for i in range(len(ver_str1)):
+        if ver_parts1[i] > ver_parts2[i]:
+            ver_states.append(0) # Greater
+        if ver_parts1[i] == ver_parts2[i]:
+            ver_states.append(1) # Equal
+        if ver_parts1[i] < ver_parts2[i]:
+            ver_states.append(2) # Lesser
+    
+    all_equal = True
+    for s in ver_states:
+        if s == 2:
+            return False
+        if s != 1:
+            all_equal = False
+    
+    if all_equal == True:
+        return False
+    return True
+
+def check_version1_greater(version1, version2):
+    ver_str1 = version1.split(".")
+    ver_parts1 = []
+
+    ver_str2 = version2.split(".")
+    ver_parts2 = []
+
+    ver_states = []
 
     for v in ver_str1:
         ver_parts1.append(int(v))
@@ -116,6 +151,41 @@ def install_package_and_exit_on_failure(folder, package_info):
 def install_package(package, hail_path):
     global hail_data_path
     hail_data_path = hail_path
+    installed_from_repo = False
+
+    if not os.path.isfile(package):
+        # Download from a repository
+        print("Package file not found! Attempting to install from a repository.")
+        best_repo = ""
+        best_version = ""
+        for repo in os.listdir(os.path.join(hail_data_path, "repo")):
+            print("Checking repo " + repo)
+            fp = open(os.path.join(hail_data_path, "repo", repo), "r")
+            for l in fp:
+                l = l.replace("\r", "").replace("\n", "")
+                if l != "":
+                    info = l.split(" - ")
+                    if info[0] == sys.argv[2]:
+                        if best_version == "":
+                            best_repo = repo
+                            best_version = info[1]
+                        else:
+                            if check_version1_greater(info[1], best_version):
+                                best_repo = repo
+                                best_version = info[1]
+            fp.close()
+        if best_repo == "":
+            print("No repo has this package!")
+            exit(1) # Error
+        
+        print("Attempting to download package from " + best_repo + ".")
+        try:
+            package = repositories.download_package(best_repo, sys.argv[2])
+        except:
+            print("Downloading package from repository failed! Package not installed.")
+            exit(1) # Error
+        print("Downloaded " + sys.argv[2] + " from " + best_repo + ".")
+        installed_from_repo = True
     folder = ""
     try:
         folder = packer.extract_package(package)
@@ -127,3 +197,7 @@ def install_package(package, hail_path):
 
     package_info = packages.check_package(folder)
     install_package_and_exit_on_failure(folder, package_info)
+
+    if installed_from_repo: # Remove if installed from repository
+        os.remove(package)
+        shutil.rmtree(folder)
