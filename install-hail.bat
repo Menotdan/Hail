@@ -10,10 +10,11 @@ echo @echo off
 echo set oldcwd=%%cd%%
 echo cd C:\Windows
 echo %command% hail-files\hail.py %%1 %%2 %%3 %%oldcwd%%
+echo cd %%oldcwd%%
 ) > C:\Windows\hail.bat
 
 mkdir C:\Windows\hail-files
-for %pyfile% in (*.py) do type %pyfile% > C:\Windows\hail-files\%pyfile%
+for %%X in (*.py) do type %%X > C:\Windows\hail-files\%%X
 
 echo Installed hail!
 goto:eof
